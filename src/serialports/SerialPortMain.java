@@ -25,6 +25,8 @@ public class SerialPortMain implements ICommunicationPort
         m_numStopBits = numStopBits;
         m_parityBits = parityBits;
         
+        m_serialPort = null;
+        
         m_inputStream = null;
         m_outputStream = null;
     }
@@ -38,18 +40,25 @@ public class SerialPortMain implements ICommunicationPort
      {
          HashSet<CommPortIdentifier> h = new HashSet<CommPortIdentifier>();
          Enumeration thePorts = CommPortIdentifier.getPortIdentifiers();
-         while (thePorts.hasMoreElements()) {
+         while (thePorts.hasMoreElements()) 
+         {
              CommPortIdentifier com = (CommPortIdentifier) thePorts.nextElement();
-             switch (com.getPortType()) {
+             switch (com.getPortType()) 
+             {
              case CommPortIdentifier.PORT_SERIAL:
-                 try {
+                 try 
+                 {
                      CommPort thePort = com.open("CommUtil", 50);
-                 thePort.close();
-                 h.add(com);
-             } catch (PortInUseException e) {
-                 System.out.println("Port, "  + com.getName() + ", is in use.");
-             } catch (Exception e) {
-                 System.err.println("Failed to open port " +  com.getName());
+                     thePort.close();
+                     h.add(com);
+                 } 
+                 catch (PortInUseException e) 
+                 {
+                     System.out.println("Port, "  + com.getName() + ", is in use.");
+                 } 
+                 catch (Exception e) 
+                 {
+                     System.err.println("Failed to open port " +  com.getName());
                      e.printStackTrace();
                  }
              }
@@ -58,13 +67,14 @@ public class SerialPortMain implements ICommunicationPort
      }
 
      // Members:
-     public final CommPortIdentifier m_identifier;
-     public final String m_portOwner;
-     public final int m_openConnectionTimeout;
-     public final int m_baudRate;
-     public final int m_numDataBits;
-     public final int m_numStopBits;
-     public final int m_parityBits;
+     protected final CommPortIdentifier m_identifier;
+     protected final String m_portOwner;
+     protected final int m_openConnectionTimeout;
+     protected final int m_baudRate;
+     protected final int m_numDataBits;
+     protected final int m_numStopBits;
+     protected final int m_parityBits;
+     protected SerialPort m_serialPort;
      
      public InputStream m_inputStream;
      public OutputStream m_outputStream;
@@ -82,27 +92,19 @@ public class SerialPortMain implements ICommunicationPort
         }
         else
         {
-            SerialPort serialPort = (SerialPort)m_identifier.open(m_portOwner, m_openConnectionTimeout);
-            serialPort.setSerialPortParams(m_baudRate, m_numDataBits, m_numStopBits, m_parityBits);
+            m_serialPort = (SerialPort)m_identifier.open(m_portOwner, m_openConnectionTimeout);
+            m_serialPort.setSerialPortParams(m_baudRate, m_numDataBits, m_numStopBits, m_parityBits);
             
-            m_inputStream = serialPort.getInputStream();
-            m_outputStream = serialPort.getOutputStream();
+            m_inputStream = m_serialPort.getInputStream();
+            m_outputStream = m_serialPort.getOutputStream();
             
         }
     }
 
     @Override
-    public void sendData(byte[] data) 
+    public void disconnect() throws Exception
     {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public byte[] receiveData() 
-    {
-        // TODO Auto-generated method stub
-        return null;
+        m_serialPort.close();      
     }
     
 }

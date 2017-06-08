@@ -8,17 +8,15 @@ import java.util.concurrent.Semaphore;
 public class SerialWriter implements Runnable
 {
     // Constructor:
-    public SerialWriter(OutputStream outputStream, LinkedList<String> outputBuffer, Semaphore outputSemaphore)
+    public SerialWriter(OutputStream outputStream, ThreadSafeListWrapper outputBuffer)
     {
         m_outputStream = outputStream;
         m_outputBuffer = outputBuffer;
-        m_outputSemaphore = outputSemaphore;
     }
     
     // Members:
     protected OutputStream m_outputStream;
-    protected LinkedList<String> m_outputBuffer;
-    protected Semaphore m_outputSemaphore;
+    protected ThreadSafeListWrapper m_outputBuffer;
     
     @Override
     public void run() 
@@ -27,8 +25,7 @@ public class SerialWriter implements Runnable
         {
             while(true)
             {
-                m_outputSemaphore.acquire();
-                m_outputStream.write(m_outputBuffer.removeFirst().getBytes());
+                m_outputStream.write(m_outputBuffer.dequeue().getBytes());
                 System.out.println("Trying to remove and write one");
             }
         }
@@ -36,10 +33,6 @@ public class SerialWriter implements Runnable
         {
             e.printStackTrace();
         } 
-        catch (InterruptedException e) 
-        {
-            e.printStackTrace();
-        }
         
     }
 

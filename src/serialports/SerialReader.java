@@ -1,39 +1,46 @@
 package serialports;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 
 public class SerialReader implements Runnable
 {
-    public SerialReader(InputStream inStream, LinkedList<String> buffer, Semaphore bufferSemaphore)
+    public SerialReader(InputStream inStream, ThreadSafeListWrapper buffer)
     {
         m_buffer = buffer;
-        m_inputSemaphore = bufferSemaphore;
         m_inputStream = inStream;
     }
     
     protected InputStream m_inputStream;
-    protected LinkedList<String> m_buffer;
-    protected Semaphore m_inputSemaphore;
+    protected ThreadSafeListWrapper m_buffer;
     
     @Override
     public void run() 
     {
-        byte[] localbuffer = new byte[50];
         try
         {
-            while ((m_inputStream.read(localbuffer)) > -1)
-            {
-                String localString = new String(localbuffer, StandardCharsets.UTF_8);
-                m_buffer.add(localString);
-                m_inputSemaphore.release();
-            }
+            BufferedReader br = null;
+            StringBuilder sb = new StringBuilder();
+            String line;
+        
+//            while (true)
+//            {
+                br = new BufferedReader(new InputStreamReader(m_inputStream));
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                m_buffer.enqueue(line);
+
+//            }
         }
         catch (IOException e)
         {
+            System.out.println("Error with enqueueing local buffer.");
             e.printStackTrace();
         }
     }
