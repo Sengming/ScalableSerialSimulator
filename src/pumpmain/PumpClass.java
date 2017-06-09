@@ -3,6 +3,8 @@
  */
 package pumpmain;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -21,7 +23,7 @@ import serialports.ThreadSafeListWrapper;
  *
  */
 public class PumpClass {
-
+    
 	/**
 	 * @param args
 	 * @throws IOException 
@@ -43,6 +45,7 @@ public class PumpClass {
 		int selectedPortNumber = scan.nextInt();
 		
 		System.out.println("Your selection is: " + ((CommPortIdentifier)(commPortArray[selectedPortNumber])).getName());
+
 	
 		// Code to test (Remove later):
 		
@@ -62,10 +65,10 @@ public class PumpClass {
 		
 	    // Instantiate Reader:
 		LinkedList<String> inputList = new LinkedList<String>();
-		Semaphore inputSem = new Semaphore(0);
+		Semaphore inputSem = new Semaphore(1);
 		ThreadSafeListWrapper threadSafeInputList = new ThreadSafeListWrapper(inputList, inputSem);		
 		
-//		InputBufferReader bufferReader = new InputBufferReader(inputSem, threadSafeInputList);
+		InputBufferReader bufferReader = new InputBufferReader(inputSem, threadSafeInputList);
 		
 		SerialPortMain mainSerialPort = new SerialPortMain((CommPortIdentifier)(commPortArray[selectedPortNumber]), "Pump", baudRate, dataBits, stopBits, parityBits);
 		try
