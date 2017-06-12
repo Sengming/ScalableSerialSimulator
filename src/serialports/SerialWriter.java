@@ -1,9 +1,8 @@
 package serialports;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.concurrent.Semaphore;
 
 public class SerialWriter implements Runnable
 {
@@ -21,11 +20,12 @@ public class SerialWriter implements Runnable
     @Override
     public void run() 
     {
+        DataOutputStream dataout = new DataOutputStream(m_outputStream);
         try
         {
             while(true)
             {
-                m_outputStream.write(m_outputBuffer.dequeue().getBytes());
+                dataout.writeByte(m_outputBuffer.dequeue());
                 System.out.println("Trying to remove and write one");
             }
         }
@@ -37,3 +37,4 @@ public class SerialWriter implements Runnable
     }
 
 }
+

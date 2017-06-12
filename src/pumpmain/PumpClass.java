@@ -50,22 +50,22 @@ public class PumpClass {
 		// Code to test (Remove later):
 		
 		// Instantiate Writer:
-		LinkedList<String> testList= new LinkedList<String>();
+		LinkedList<Byte> testList= new LinkedList<Byte>();
         Semaphore outputSem = new Semaphore(0);
 		ThreadSafeListWrapper threadSafeList = new ThreadSafeListWrapper(testList, outputSem);
-		threadSafeList.enqueue("Hello");
-        threadSafeList.enqueue("This");
-        threadSafeList.enqueue("Is");
-        threadSafeList.enqueue("A");
-        threadSafeList.enqueue("Test");
+		threadSafeList.enqueue((byte)0x055);
+        threadSafeList.enqueue((byte)0xFF);
+        threadSafeList.enqueue((byte)3);
+        threadSafeList.enqueue((byte)4);;
+        threadSafeList.enqueue((byte)5);
 		int baudRate = 115200;
 		int dataBits = SerialPort.DATABITS_8;
 		int stopBits = SerialPort.STOPBITS_1;
 		int parityBits = SerialPort.PARITY_NONE;
 		
 	    // Instantiate Reader:
-		LinkedList<String> inputList = new LinkedList<String>();
-		Semaphore inputSem = new Semaphore(1);
+		LinkedList<Byte> inputList = new LinkedList<Byte>();
+		Semaphore inputSem = new Semaphore(0);
 		ThreadSafeListWrapper threadSafeInputList = new ThreadSafeListWrapper(inputList, inputSem);		
 		
 		InputBufferReader bufferReader = new InputBufferReader(inputSem, threadSafeInputList);
@@ -73,10 +73,12 @@ public class PumpClass {
 		SerialPortMain mainSerialPort = new SerialPortMain((CommPortIdentifier)(commPortArray[selectedPortNumber]), "Pump", baudRate, dataBits, stopBits, parityBits);
 		try
 		{
-    		try {
+    		try 
+    		{
                 mainSerialPort.connect();
-            } catch (Exception e1) {
-                // TODO Auto-generated catch block
+            } 
+    		catch (Exception e1) 
+    		{
                 e1.printStackTrace();
             }
     		
@@ -88,10 +90,9 @@ public class PumpClass {
     		// Start both threads:
     		inputThread.start();
             outputThread.start();
-    //		mainSerialPort.m_outputStream.write(testList.getFirst().getBytes());
 		
-//            Thread printThread = new Thread(bufferReader, "Printer");
-//            printThread.start();
+            Thread printThread = new Thread(bufferReader, "Printer");
+            printThread.start();
 		}
 		finally
 		{

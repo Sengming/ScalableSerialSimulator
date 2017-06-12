@@ -6,7 +6,7 @@ import java.util.concurrent.Semaphore;
 public class ThreadSafeListWrapper 
 {
     // Constructor:
-    public ThreadSafeListWrapper(LinkedList<String> listToWrap, Semaphore signalSem)
+    public ThreadSafeListWrapper(LinkedList<Byte> listToWrap, Semaphore signalSem)
     {
         m_list = listToWrap;
         m_signalSem = signalSem;
@@ -14,21 +14,22 @@ public class ThreadSafeListWrapper
     }
     
     // Members:
-    protected LinkedList<String> m_list;
+    protected LinkedList<Byte> m_list;
     protected Semaphore m_lockSem;
     protected Semaphore m_signalSem;
     
     
     // Public Interface Methods:
     
-    public void enqueue(String item)
+    public void enqueue(Byte item)
     {
         try 
         {
             m_lockSem.acquire();
             m_list.addLast(item);
-            m_signalSem.release();
+//            System.out.println("Adding Permits: "+m_signalSem.availablePermits());
             m_lockSem.release();
+            m_signalSem.release();
         } 
         catch (InterruptedException e) 
         {
@@ -36,20 +37,20 @@ public class ThreadSafeListWrapper
         }
     }
     
-    public String dequeue()
+    public Byte dequeue()
     {
-        String retVal = null;
+        Byte retVal = null;
         try
         {
-            m_lockSem.acquire();
             m_signalSem.acquire();
+            m_lockSem.acquire();       
+//            System.out.println("Taking Permits: "+m_signalSem.availablePermits());
             retVal = m_list.removeFirst();
             m_lockSem.release();
         }
         catch (InterruptedException e)
         {
             e.printStackTrace();
-            retVal = "An Error has Occurred!";
         }
         
         return retVal;

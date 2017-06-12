@@ -18,10 +18,13 @@ public class InputBufferReader implements Runnable
     {
         try 
         {
-            m_signalSemaphore.acquire();
-            System.out.println(m_list.dequeue());
+            while(true)
+            {
+                System.out.println("List Values:" + m_list.dequeue());
+                System.out.println("Signal Semaphore acquired!");
+            }
         } 
-        catch (InterruptedException e) 
+        catch (Exception e) 
         {
             e.printStackTrace();
         }
