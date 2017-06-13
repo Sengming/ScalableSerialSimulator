@@ -26,7 +26,7 @@ public class SerialWriter implements Runnable
             while(true)
             {
                 dataout.writeByte(m_outputBuffer.dequeue());
-                System.out.println("Trying to remove and write one");
+//                System.out.println("Trying to remove and write one");
             }
         }
         catch (IOException e)

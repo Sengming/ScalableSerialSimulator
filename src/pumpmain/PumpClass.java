@@ -3,23 +3,23 @@
  */
 package pumpmain;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 import gnu.io.*;
+import packets.IDataPacket;
+import packets.PacketFactory;
+import packets.PacketFactory.PacketTypes_e;
 import serialports.InputBufferReader;
 import serialports.SerialPortMain;
 import serialports.SerialReader;
 import serialports.SerialWriter;
 import serialports.ThreadSafeListWrapper;
+import serialports.TimedBufferOutput;
 /**
- * @author root
+ * @author SengMing
  *
  */
 public class PumpClass {
@@ -46,63 +46,69 @@ public class PumpClass {
 		
 		System.out.println("Your selection is: " + ((CommPortIdentifier)(commPortArray[selectedPortNumber])).getName());
 
-	
-		// Code to test (Remove later):
 		
 		// Instantiate Writer:
-		LinkedList<Byte> testList= new LinkedList<Byte>();
+		LinkedList<Byte> outputList= new LinkedList<Byte>();
         Semaphore outputSem = new Semaphore(0);
-		ThreadSafeListWrapper threadSafeList = new ThreadSafeListWrapper(testList, outputSem);
-		threadSafeList.enqueue((byte)0x055);
-        threadSafeList.enqueue((byte)0xFF);
-        threadSafeList.enqueue((byte)3);
-        threadSafeList.enqueue((byte)4);;
-        threadSafeList.enqueue((byte)5);
-		int baudRate = 115200;
-		int dataBits = SerialPort.DATABITS_8;
-		int stopBits = SerialPort.STOPBITS_1;
-		int parityBits = SerialPort.PARITY_NONE;
+		ThreadSafeListWrapper threadSafeOutputList = new ThreadSafeListWrapper(outputList, outputSem);
 		
 	    // Instantiate Reader:
 		LinkedList<Byte> inputList = new LinkedList<Byte>();
 		Semaphore inputSem = new Semaphore(0);
 		ThreadSafeListWrapper threadSafeInputList = new ThreadSafeListWrapper(inputList, inputSem);		
 		
+		// Create Input Buffer reader/printer
 		InputBufferReader bufferReader = new InputBufferReader(inputSem, threadSafeInputList);
 		
-		SerialPortMain mainSerialPort = new SerialPortMain((CommPortIdentifier)(commPortArray[selectedPortNumber]), "Pump", baudRate, dataBits, stopBits, parityBits);
-		try
-		{
-    		try 
-    		{
-                mainSerialPort.connect();
-            } 
-    		catch (Exception e1) 
-    		{
-                e1.printStackTrace();
-            }
-    		
-    		SerialWriter serialWriter = new SerialWriter(mainSerialPort.m_outputStream, threadSafeList);
-            SerialReader serialReader = new SerialReader(mainSerialPort.m_inputStream, threadSafeInputList);
-    		Thread outputThread = new Thread(serialWriter, "Writer");
-    		Thread inputThread = new Thread(serialReader, "Reader");
-    		
-    		// Start both threads:
-    		inputThread.start();
-            outputThread.start();
+		// Instantiate SerialPort:
+        int baudRate = 115200;
+        int dataBits = SerialPort.DATABITS_8;
+        int stopBits = SerialPort.STOPBITS_1;
+        int parityBits = SerialPort.PARITY_NONE;
+        SerialPortMain mainSerialPort = new SerialPortMain((CommPortIdentifier)(commPortArray[selectedPortNumber]), "Pump", baudRate, dataBits, stopBits, parityBits);
 		
-            Thread printThread = new Thread(bufferReader, "Printer");
-            printThread.start();
-		}
-		finally
+        // Attempt to establish connection and 
+		try 
 		{
-		    try {
-//                mainSerialPort.disconnect();
-            } catch (Exception e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-		}
+            mainSerialPort.connect();
+        } 
+		catch (Exception e1) 
+		{
+            e1.printStackTrace();
+        }
+		
+		SerialWriter serialWriter = new SerialWriter(mainSerialPort.m_outputStream, threadSafeOutputList);
+        SerialReader serialReader = new SerialReader(mainSerialPort.m_inputStream, threadSafeInputList);
+		Thread outputThread = new Thread(serialWriter, "Writer");
+		Thread inputThread = new Thread(serialReader, "Reader");
+		
+		// Start both input/output threads:
+		inputThread.start();
+        outputThread.start();
+	
+        // Start printer thread:
+        Thread printThread = new Thread(bufferReader, "Printer");
+        printThread.start();
+        
+        // Create the packets and append to OutputList:
+        PacketFactory packetFactory = new PacketFactory();
+        
+        byte [] sessionData0 = new byte[8];
+        IDataPacket packetToOutput0 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData0);
+        byte [] sessionData1 = new byte[8];
+        IDataPacket packetToOutput1 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData1);
+        byte [] sessionData2 = new byte[8];
+        IDataPacket packetToOutput2 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData2);
+        
+        LinkedList<IDataPacket> packetList = new LinkedList<IDataPacket>();
+        packetList.add(packetToOutput0);
+        packetList.add(packetToOutput1);
+        packetList.add(packetToOutput2);
+        TimedBufferOutput timedOutput = new TimedBufferOutput(packetList, threadSafeOutputList, 1000, true);
+        timedOutput.startTimer();
+        
+        // Close scanner:
+        scan.close();
 	
 	}
 	

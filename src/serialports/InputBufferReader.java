@@ -20,8 +20,8 @@ public class InputBufferReader implements Runnable
         {
             while(true)
             {
-                System.out.println("List Values:" + m_list.dequeue());
-                System.out.println("Signal Semaphore acquired!");
+                System.out.print(m_list.dequeue() + " ");
+//                System.out.println("Signal Semaphore acquired!");
             }
         } 
         catch (Exception e) 

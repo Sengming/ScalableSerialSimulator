@@ -2,21 +2,17 @@ package sessionPresentationLayer;
 
 import java.util.LinkedList;
 import packets.CRCCalculations;
-import packets.DataPacket;
+import packets.ISessionLayerDataPacket;
 
-public class PumpToLinkSession implements DataPacket
+public class PumpToLinkSession implements ISessionLayerDataPacket
 {
     // Using hypothetical values. Constructor:
     public PumpToLinkSession(byte [] data)
     {
         m_data = data;
         m_frameId = 0x70;
+        m_crc16 = 0;
     }
-    
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 3L;
 
     @Override
     public LinkedList<Byte> serialize() 
@@ -29,6 +25,11 @@ public class PumpToLinkSession implements DataPacket
         {
             retVal.add(b);
         }
+        
+        short crc = calculateCRC16Field();
+        retVal.add((byte)(crc & 0xff));
+        retVal.add((byte)((crc >> 8)& 0xff));
+        
         return retVal;
     }
 
@@ -42,12 +43,6 @@ public class PumpToLinkSession implements DataPacket
         {
             m_data[i] = listIn.get(i+1);
         }
-    }
-
-    @Override
-    public byte calculateCRC8Field() 
-    {
-        return (byte)0xff;
     }
 
     @Override
@@ -65,6 +60,7 @@ public class PumpToLinkSession implements DataPacket
         return retVal;
     }
 
+    // Returns length minus CRC, so the length of the frame ID and Data
     @Override
     public int getLength() 
     {
@@ -73,5 +69,5 @@ public class PumpToLinkSession implements DataPacket
     
     private byte [] m_data;
     private byte m_frameId;
-
+    private short m_crc16;
 }
