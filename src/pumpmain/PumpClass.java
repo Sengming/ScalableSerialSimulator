@@ -90,27 +90,33 @@ public class PumpClass {
         Thread printThread = new Thread(bufferReader, "Printer");
         printThread.start();
         
-        // Create the packets and append to OutputList:
-        PacketFactory packetFactory = new PacketFactory();
+        LinkedList<IDataPacket> packetList = createPacketList();
+
+        TimedBufferOutput timedOutput = new TimedBufferOutput(packetList, threadSafeOutputList, 1000, false);
+        timedOutput.startTimer();
         
-        byte [] sessionData0 = new byte[8];
+        // Close scanner:
+        scan.close();
+	}
+	
+	// Helper function to create packet List to send:
+	public static LinkedList<IDataPacket> createPacketList()
+	{
+	    LinkedList <IDataPacket> retVal = new LinkedList<IDataPacket>();
+        // Create the packets and append to list:
+        PacketFactory packetFactory = new PacketFactory();
+	    byte [] sessionData0 = new byte[8];
         IDataPacket packetToOutput0 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData0);
         byte [] sessionData1 = new byte[8];
         IDataPacket packetToOutput1 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData1);
         byte [] sessionData2 = new byte[8];
         IDataPacket packetToOutput2 = packetFactory.createPacket(PacketTypes_e.SESSION_PACKET, sessionData2);
         
-        LinkedList<IDataPacket> packetList = new LinkedList<IDataPacket>();
-        packetList.add(packetToOutput0);
-        packetList.add(packetToOutput1);
-        packetList.add(packetToOutput2);
-        TimedBufferOutput timedOutput = new TimedBufferOutput(packetList, threadSafeOutputList, 1000, true);
-        timedOutput.startTimer();
+        retVal.add(packetToOutput0);
+        retVal.add(packetToOutput1);
+        retVal.add(packetToOutput2);
         
-        // Close scanner:
-        scan.close();
-	
+        return retVal;
 	}
-	
 
 }
