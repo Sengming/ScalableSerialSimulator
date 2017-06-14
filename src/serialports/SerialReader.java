@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 /** */
 
+// Functions to read serial input stream and add to buffer
 public class SerialReader implements Runnable
 {
     public SerialReader(InputStream inStream, ThreadSafeListWrapper buffer)
@@ -25,10 +26,8 @@ public class SerialReader implements Runnable
             int length = -1;
             while ((length = m_inputStream.read(buffer)) > -1 )
             {
-//              System.out.println("Buffer: " + buffer);
               for (int i = 0; i < length; ++i)
               {
-//                  System.out.println("Enqueueing b:" + buffer[i]);
                   m_buffer.enqueue(buffer[i]);
               }
             }

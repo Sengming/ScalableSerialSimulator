@@ -2,6 +2,7 @@ package serialports;
 
 import java.util.concurrent.Semaphore;
 
+// Function is to look at the serial input buffer for potential data and print to terminal
 public class InputBufferReader implements Runnable
 {
     public InputBufferReader(Semaphore signalSemaphore, ThreadSafeListWrapper threadSafeList)

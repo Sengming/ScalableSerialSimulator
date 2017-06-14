@@ -7,6 +7,8 @@ import javax.activity.InvalidActivityException;
 
 import packets.IDataPacket;
 
+// Functions to enqueue the given packet list to our output buffer at given intervals. We can set it to
+// recur and resend the list over and over. Else, it cancels the timer and removes the timer task.
 public class TimedBufferOutput 
 {
     public TimedBufferOutput(LinkedList<IDataPacket> packetList, ThreadSafeListWrapper outputBuffer,
@@ -29,7 +31,8 @@ public class TimedBufferOutput
         s_isTimerStarted = false;
     }
     
-    // Warning: High cyclomatic complexity
+    // Warning: High cyclomatic complexity. Starts timer depending on injected settings.
+    // Non-reentrant
     public void startTimer() throws InvalidActivityException
     {
         if (s_isTimerStarted == false)

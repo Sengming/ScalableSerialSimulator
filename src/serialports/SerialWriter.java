@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+// Functions to write anything placed into the output buffer out to the output stream
 public class SerialWriter implements Runnable
 {
     // Constructor:
